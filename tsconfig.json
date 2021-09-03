@@ -1,0 +1,26 @@
+
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "jsx": "react",
+    "lib": ["esnext", "dom"],
+    "sourceMap": false,
+    "target": "es5",
+    "outDir": "bin",
+    "module": "commonjs",
+    "moduleResolution": "node",
+    "strict": true,
+    "strictNullChecks": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "declaration": false,
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "esModuleInterop": true,
+    "types": ["node", "jest"],
+    "typeRoots": ["./node_modules/@types"],
+  },
+  "include": ["src/**/*"]
+}
+

@@ -1,0 +1,40 @@
+{
+    "$schema": "http://json-schema.org/schema",
+    "$id": "https://github.com/wendellhu95/squirrel/blob/master/src/schema/squirrel.schema.json",
+    "title": "SquirrelPackagingConfig",
+    "description": "JSON schema for configuring squirrel",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "dest": {
+            "description": "Destination for production files",
+            "type": "string",
+            "default": "publish"
+        },
+        "entryFileName": {
+            "description": "Entry file name",
+            "type": "string",
+            "default": "publicApi.ts"
+        },
+        "srcRoot": {
+            "description": "Root dir name of the source files",
+            "type": "string",
+            "default": "src"
+        },
+        "tsConfig": {
+            "description": "Relative path to the ts config file",
+            "type": "string",
+            "default": "tsconfig.json"
+        },
+        "copyFiles": {
+            "description": "Files should copied to dest folder",
+            "type": "array",
+            "default": [
+                "README.md"
+            ]
+        }
+    },
+    "additionalProperties": false
+}
