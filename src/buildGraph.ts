@@ -34,10 +34,11 @@ export class EntryPoint {
         const { dest } = this.buildConfig
 
         if (this.isPrimary) {
+            const path = excludeScopeName(this.modulePath)
             return {
-                umd: `${dest}/dist/${this.modulePath}`,
+                umd: `${dest}/dist/${path}`,
                 esm: `${dest}/esm`,
-                fesm: `${dest}/fesm/${this.modulePath}`,
+                fesm: `${dest}/fesm/${path}`,
             }
         }
 
@@ -84,4 +85,12 @@ export class BuildGraph {
 
 function transformModulePathToModuleName(modulePath: string): string {
     return modulePath.replace(/\//g, '-')
+}
+
+export function excludeScopeName(nameWithScope: string): string {
+    if (nameWithScope.startsWith('@')) {
+        return nameWithScope.split('/')[1]
+    } else {
+        return nameWithScope
+    }
 }

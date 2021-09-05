@@ -7,7 +7,7 @@ import { SquirrelPackagingConfig } from './schema/squirrel.schema'
 import { Logger } from './logger'
 import { exist, globFiles } from './utils/file'
 import { isRelativePath } from './utils/path'
-import { EntryPoint, BuildGraph } from './buildGraph'
+import { EntryPoint, BuildGraph, excludeScopeName } from './buildGraph'
 
 class RelativeImportOutsideOfEntryPointError extends Error {
     constructor(moduleName: string, containingFile: string) {
@@ -147,7 +147,6 @@ async function buildESM(entry: EntryPoint): Promise<void> {
         jsx: ts.JsxEmit.React,
         resolve: ['ts', 'tsx', 'js', 'jsx'],
         skipLibCheck: true,
-        noLib: true,
         target: ts.ScriptTarget.Latest,
         baseUrl: './',
         moduleResolution: ts.ModuleResolutionKind.NodeJs,
@@ -248,8 +247,8 @@ async function writePackageJSON(entry: EntryPoint): Promise<void> {
                 }
             }
 
-            packageJSONObject.main = `./dist/${entry.modulePath}.js`
-            packageJSONObject.module = `./fesm/${entry.modulePath}.js`
+            packageJSONObject.main = `./dist/${excludeScopeName(entry.modulePath)}.js`
+            packageJSONObject.module = `./fesm/${excludeScopeName(entry.modulePath)}.js`
             packageJSONObject.typings = `./esm/${entry.buildConfig.entryFileName.replace(
                 /.ts$/,
                 '.d.ts'

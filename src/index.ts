@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import osPath from 'path'
 import { program } from 'commander'
 

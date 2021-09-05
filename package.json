@@ -1,6 +1,6 @@
 {
-    "name": "squirrel",
-    "version": "0.1.0",
+    "name": "@wendellhu/squirrel",
+    "version": "0.1.2",
     "description": "",
     "main": "index.js",
     "bin": {

@@ -16,10 +16,11 @@ var EntryPoint = /** @class */ (function () {
     EntryPoint.prototype.buildFileDestination = function () {
         var dest = this.buildConfig.dest;
         if (this.isPrimary) {
+            var path = excludeScopeName(this.modulePath);
             return {
-                umd: dest + "/dist/" + this.modulePath,
+                umd: dest + "/dist/" + path,
                 esm: dest + "/esm",
-                fesm: dest + "/fesm/" + this.modulePath,
+                fesm: dest + "/fesm/" + path,
             };
         }
         var moduleName = transformModulePathToModuleName(this.modulePath);
@@ -64,4 +65,12 @@ var BuildGraph = /** @class */ (function () {
 exports.BuildGraph = BuildGraph;
 function transformModulePathToModuleName(modulePath) {
     return modulePath.replace(/\//g, '-');
+}
+function excludeScopeName(nameWithScope) {
+    if (nameWithScope.startsWith('@')) {
+        return nameWithScope.split('/')[1];
+    }
+    else {
+        return nameWithScope;
+    }
 }
