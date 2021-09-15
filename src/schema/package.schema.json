@@ -5,15 +5,9 @@
             "$ref": "http://json.schemastore.org/package",
             "properties": {
                 "squirrel": {
+                    "$ref": "./squirrel.schema.json",
                     "title": "SquirrelPackageConfig",
-                    "description": "JSON schema for squirrel config extending package.json",
-                    "properties": {
-                        "outDir": {
-                            "description": "Destination of productions.",
-                            "type": "string",
-                            "default": "publish"
-                        }
-                    }
+                    "description": "JSON schema for squirrel config extending package.json"
                 }
             }
         }
