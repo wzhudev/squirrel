@@ -275,7 +275,7 @@ function buildESM(entry) {
     return __awaiter(this, void 0, void 0, function () {
         var tsConfig, entryFilePath, compilerHost, program;
         return __generator(this, function (_a) {
-            tsConfig = __assign(__assign({ jsx: typescript_1.default.JsxEmit.React, resolve: ['ts', 'tsx', 'js', 'jsx'], skipLibCheck: true, noLib: true, target: typescript_1.default.ScriptTarget.Latest, baseUrl: './', moduleResolution: typescript_1.default.ModuleResolutionKind.NodeJs, declaration: true }, entry.tsConfig), { outDir: entry.fileDestination.esm });
+            tsConfig = __assign(__assign({ jsx: typescript_1.default.JsxEmit.React, resolve: ['ts', 'tsx', 'js', 'jsx'], skipLibCheck: true, target: typescript_1.default.ScriptTarget.Latest, baseUrl: './', moduleResolution: typescript_1.default.ModuleResolutionKind.NodeJs, declaration: true }, entry.tsConfig), { outDir: entry.fileDestination.esm });
             // filter out dependencies
             if (tsConfig.paths) {
                 entry.dependencies.forEach(function (dependency) {
@@ -387,8 +387,8 @@ function writePackageJSON(entry) {
                             delete packageJSONObject[prop];
                         }
                     }
-                    packageJSONObject.main = "./dist/" + entry.modulePath + ".js";
-                    packageJSONObject.module = "./fesm/" + entry.modulePath + ".js";
+                    packageJSONObject.main = "./dist/" + (0, buildGraph_1.excludeScopeName)(entry.modulePath) + ".js";
+                    packageJSONObject.module = "./fesm/" + (0, buildGraph_1.excludeScopeName)(entry.modulePath) + ".js";
                     packageJSONObject.typings = "./esm/" + entry.buildConfig.entryFileName.replace(/.ts$/, '.d.ts');
                     packageJSONObject.sideEffects = false;
                     return [4 /*yield*/, fs_1.default.promises.writeFile(entry.buildConfig.dest + "/package.json", JSON.stringify(packageJSONObject, undefined, 2))];
@@ -456,7 +456,6 @@ function analyzeEntryPoint(entryPoint, primaryModuleName) {
                 jsx: typescript_1.default.JsxEmit.React,
                 resolve: ['ts', 'tsx', 'js', 'jsx'],
                 skipLibCheck: true,
-                noLib: true,
                 noEmit: true,
                 target: typescript_1.default.ScriptTarget.Latest,
             };

@@ -324,7 +324,6 @@ async function analyzeEntryPoint(
         jsx: ts.JsxEmit.React,
         resolve: ['ts', 'tsx', 'js', 'jsx'],
         skipLibCheck: true,
-        noLib: true,
         noEmit: true, // do emit anything here, we are just checking it could build
         target: ts.ScriptTarget.Latest,
     }

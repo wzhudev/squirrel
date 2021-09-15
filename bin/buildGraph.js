@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.BuildGraph = exports.EntryPoint = void 0;
+exports.excludeScopeName = exports.BuildGraph = exports.EntryPoint = void 0;
 var dag_1 = require("./dag");
 var EntryPoint = /** @class */ (function () {
     function EntryPoint(buildConfig, primaryModuleName, tsConfig, modulePath, entryFilePath, isPrimary) {
@@ -74,3 +74,4 @@ function excludeScopeName(nameWithScope) {
         return nameWithScope;
     }
 }
+exports.excludeScopeName = excludeScopeName;
