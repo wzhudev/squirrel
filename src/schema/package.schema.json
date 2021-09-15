@@ -5,7 +5,7 @@
             "$ref": "http://json.schemastore.org/package",
             "properties": {
                 "squirrel": {
-                    "$ref": "./squirrel.schema.json",
+                    "$ref": "https://raw.githubusercontent.com/wendellhu95/squirrel/master/src/schema/squirrel.schema.json",
                     "title": "SquirrelPackageConfig",
                     "description": "JSON schema for squirrel config extending package.json"
                 }
