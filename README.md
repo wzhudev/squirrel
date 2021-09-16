@@ -16,7 +16,6 @@ Or add this to your 'package.json' file
 "scripts": {
 +  "build": "squirrel"
 }
-"
 ```
 
 install and then build
