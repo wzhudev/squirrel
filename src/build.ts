@@ -32,7 +32,7 @@ class BuildTask {
         public readonly moduleName: string,
         public readonly primaryEntryPoint: EntryPoint | null,
         public readonly secondaryEntryPoints: EntryPoint[] | null
-    ) {}
+    ) { }
 
     getAllEntries(): EntryPoint[] {
         const entries = []
@@ -105,9 +105,57 @@ export async function build(workingPath: string) {
         await buildForEntry(entry)
     }
 
+    await writeExports(task)
     await copyFiles(task)
 
     Logger.log('Building finished')
+}
+
+/**
+ * write "exports" field in the package.json of the primary entry point
+ * @param buildTask
+ */
+async function writeExports(buildTask: BuildTask) {
+    const exportsInfo = buildTask.secondaryEntryPoints?.reduce((acc, entry) => {
+        (acc[`./${entry.modulePath}`] = {
+            // main: `../dist/${entry.modulePath}.js`,
+            // module: `../fesm/${entry.modulePath}.js`,
+            // typings: `../esm/${entry.modulePath}/publicApi.d.ts`,
+            import: `./fesm/${entry.modulePath}.js`,
+            require: `./dist/${entry.modulePath}.js`,
+            types: `./esm/${entry.modulePath}/publicApi.d.ts`,
+        });
+
+        return acc;
+    }, {} as Record<string, any>)
+
+    console.log('exportsInfo', JSON.stringify(exportsInfo, null, 2))
+    let packageJSON = await fs.promises.readFile(
+        path.resolve(process.cwd(), 'publish/package.json'),
+        'utf-8'
+    )
+
+    if (packageJSON) {
+        const packageJSONObject = JSON.parse(packageJSON)
+        const entry = buildTask.primaryEntryPoint!
+
+        exportsInfo!['./package.json'] = './package.json'
+        exportsInfo!['.'] = {
+            "import": `./fesm/${excludeScopeName(
+                entry.modulePath
+            )}.js`,
+            "require": `./dist/${excludeScopeName(
+                entry.modulePath
+            )}.js`,
+            "types": `./esm/publicApi.d.ts`
+        }
+        packageJSONObject.exports = exportsInfo
+
+        return await fs.promises.writeFile(
+            `${entry.buildConfig.dest}/package.json`,
+            JSON.stringify(packageJSONObject, undefined, 2)
+        )
+    }
 }
 
 async function copyFiles(buildTask: BuildTask) {
@@ -178,9 +226,8 @@ async function buildESM(entry: EntryPoint): Promise<void> {
  */
 async function buildUMD(entry: EntryPoint): Promise<void> {
     const bundle = await rollup.rollup({
-        input: `${
-            entry.fileDestination.esm
-        }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
+        input: `${entry.fileDestination.esm
+            }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
         external: (moduleId) => {
             const ret = entry.dependencies.has(moduleId)
             return ret
@@ -200,9 +247,8 @@ async function buildUMD(entry: EntryPoint): Promise<void> {
 
 async function buildFESM(entry: EntryPoint): Promise<void> {
     const bundle = await rollup.rollup({
-        input: `${
-            entry.fileDestination.esm
-        }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
+        input: `${entry.fileDestination.esm
+            }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
         external: (moduleId) => entry.dependencies.has(moduleId),
         preserveSymlinks: true,
         inlineDynamicImports: true,
@@ -247,8 +293,12 @@ async function writePackageJSON(entry: EntryPoint): Promise<void> {
                 }
             }
 
-            packageJSONObject.main = `./dist/${excludeScopeName(entry.modulePath)}.js`
-            packageJSONObject.module = `./fesm/${excludeScopeName(entry.modulePath)}.js`
+            packageJSONObject.main = `./dist/${excludeScopeName(
+                entry.modulePath
+            )}.js`
+            packageJSONObject.module = `./fesm/${excludeScopeName(
+                entry.modulePath
+            )}.js`
             packageJSONObject.typings = `./esm/${entry.buildConfig.entryFileName.replace(
                 /.ts$/,
                 '.d.ts'
@@ -262,13 +312,13 @@ async function writePackageJSON(entry: EntryPoint): Promise<void> {
         }
     }
 
-    // TODO: write secondary package.json
     await fs.promises.mkdir(`publish/${entry.modulePath}`)
 
     return await fs.promises.writeFile(
         `publish/${entry.modulePath}/package.json`,
         JSON.stringify(
             {
+                // TODO@huwenzhao: not working for deeply wrapped sub folders
                 main: `../dist/${entry.modulePath}.js`,
                 module: `../fesm/${entry.modulePath}.js`,
                 typings: `../esm/${entry.modulePath}/publicApi.d.ts`,
@@ -359,7 +409,6 @@ async function analyzeEntryPoint(
                 moduleName
             )
             if (beyondRootPath(entryRootPath, absolutePath)) {
-                console.log(entryRootPath, absolutePath)
                 throw new RelativeImportOutsideOfEntryPointError(
                     moduleName,
                     containingFile

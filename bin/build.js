@@ -214,8 +214,11 @@ function build(workingPath) {
                 case 6:
                     _i++;
                     return [3 /*break*/, 4];
-                case 7: return [4 /*yield*/, copyFiles(task)];
+                case 7: return [4 /*yield*/, writeExports(task)];
                 case 8:
+                    _a.sent();
+                    return [4 /*yield*/, copyFiles(task)];
+                case 9:
                     _a.sent();
                     logger_1.Logger.log('Building finished');
                     return [2 /*return*/];
@@ -224,6 +227,49 @@ function build(workingPath) {
     });
 }
 exports.build = build;
+/**
+ * write "exports" field in the package.json of the primary entry point
+ * @param buildTask
+ */
+function writeExports(buildTask) {
+    var _a;
+    return __awaiter(this, void 0, void 0, function () {
+        var exportsInfo, packageJSON, packageJSONObject, entry;
+        return __generator(this, function (_b) {
+            switch (_b.label) {
+                case 0:
+                    exportsInfo = (_a = buildTask.secondaryEntryPoints) === null || _a === void 0 ? void 0 : _a.reduce(function (acc, entry) {
+                        (acc["./" + entry.modulePath] = {
+                            // main: `../dist/${entry.modulePath}.js`,
+                            // module: `../fesm/${entry.modulePath}.js`,
+                            // typings: `../esm/${entry.modulePath}/publicApi.d.ts`,
+                            import: "./fesm/" + entry.modulePath + ".js",
+                            require: "./dist/" + entry.modulePath + ".js",
+                            types: "./esm/" + entry.modulePath + "/publicApi.d.ts",
+                        });
+                        return acc;
+                    }, {});
+                    console.log('exportsInfo', JSON.stringify(exportsInfo, null, 2));
+                    return [4 /*yield*/, fs_1.default.promises.readFile(path_1.default.resolve(process.cwd(), 'publish/package.json'), 'utf-8')];
+                case 1:
+                    packageJSON = _b.sent();
+                    if (!packageJSON) return [3 /*break*/, 3];
+                    packageJSONObject = JSON.parse(packageJSON);
+                    entry = buildTask.primaryEntryPoint;
+                    exportsInfo['./package.json'] = './package.json';
+                    exportsInfo['.'] = {
+                        "import": "./fesm/" + (0, buildGraph_1.excludeScopeName)(entry.modulePath) + ".js",
+                        "require": "./dist/" + (0, buildGraph_1.excludeScopeName)(entry.modulePath) + ".js",
+                        "types": "./esm/publicApi.d.ts"
+                    };
+                    packageJSONObject.exports = exportsInfo;
+                    return [4 /*yield*/, fs_1.default.promises.writeFile(entry.buildConfig.dest + "/package.json", JSON.stringify(packageJSONObject, undefined, 2))];
+                case 2: return [2 /*return*/, _b.sent()];
+                case 3: return [2 /*return*/];
+            }
+        });
+    });
+}
 function copyFiles(buildTask) {
     return __awaiter(this, void 0, void 0, function () {
         return __generator(this, function (_a) {
@@ -393,13 +439,11 @@ function writePackageJSON(entry) {
                     packageJSONObject.sideEffects = false;
                     return [4 /*yield*/, fs_1.default.promises.writeFile(entry.buildConfig.dest + "/package.json", JSON.stringify(packageJSONObject, undefined, 2))];
                 case 2: return [2 /*return*/, _a.sent()];
-                case 3: 
-                // TODO: write secondary package.json
-                return [4 /*yield*/, fs_1.default.promises.mkdir("publish/" + entry.modulePath)];
+                case 3: return [4 /*yield*/, fs_1.default.promises.mkdir("publish/" + entry.modulePath)];
                 case 4:
-                    // TODO: write secondary package.json
                     _a.sent();
                     return [4 /*yield*/, fs_1.default.promises.writeFile("publish/" + entry.modulePath + "/package.json", JSON.stringify({
+                            // TODO@huwenzhao: not working for deeply wrapped sub folders
                             main: "../dist/" + entry.modulePath + ".js",
                             module: "../fesm/" + entry.modulePath + ".js",
                             typings: "../esm/" + entry.modulePath + "/publicApi.d.ts",
@@ -472,7 +516,6 @@ function analyzeEntryPoint(entryPoint, primaryModuleName) {
                     }
                     var absolutePath = path_1.default.resolve(path_1.default.dirname(containingFile), moduleName);
                     if (beyondRootPath(entryRootPath, absolutePath)) {
-                        console.log(entryRootPath, absolutePath);
                         throw new RelativeImportOutsideOfEntryPointError(moduleName, containingFile);
                     }
                     var resolvedModule = typescript_1.default.resolveModuleName(moduleName, containingFile, options, compilerHost, undefined, redirectedReference).resolvedModule;

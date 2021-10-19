@@ -7,7 +7,12 @@ export function exist(filePath: string): boolean {
 }
 
 const promisifiedGlob = promisify(glob)
-export async function globFiles(pattern: string, options?: glob.IOptions): Promise<string[]> {
-    const files = await Promise.all([pattern].map((pattern) => promisifiedGlob(pattern, options)))
+export async function globFiles(
+    pattern: string,
+    options?: glob.IOptions
+): Promise<string[]> {
+    const files = await Promise.all(
+        [pattern].map((pattern) => promisifiedGlob(pattern, options))
+    )
     return files.flatMap((x) => x)
 }

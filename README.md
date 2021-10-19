@@ -122,6 +122,10 @@ import {} from 'your-package-name/foo'
 import {} from 'your-package-name' // error!
 ```
 
+## Dependencies
+
+
+
 ## Used by
 
 -   [redi](https://github.com/wendellhu95/redi), a dependency injection library
