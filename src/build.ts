@@ -32,7 +32,7 @@ class BuildTask {
         public readonly moduleName: string,
         public readonly primaryEntryPoint: EntryPoint | null,
         public readonly secondaryEntryPoints: EntryPoint[] | null
-    ) { }
+    ) {}
 
     getAllEntries(): EntryPoint[] {
         const entries = []
@@ -87,7 +87,7 @@ function resolveTsConfig(directoryPath: string, _isPrimary: boolean) {
 
 /**
  * build from the path of the primary entry point
- * 
+ *
  * @main
  * @param workingPath primary entry (the folder that contains the package.json) path
  */
@@ -121,16 +121,16 @@ export async function build(workingPath: string) {
  */
 async function writeExports(buildTask: BuildTask) {
     const exportsInfo = buildTask.secondaryEntryPoints?.reduce((acc, entry) => {
-        (acc[`./${entry.modulePath}`] = {
+        acc[`./${entry.modulePath}`] = {
             // main: `../dist/${entry.modulePath}.js`,
             // module: `../fesm/${entry.modulePath}.js`,
             // typings: `../esm/${entry.modulePath}/publicApi.d.ts`,
             import: `./fesm/${entry.modulePath}.js`,
             require: `./dist/${entry.modulePath}.js`,
             types: `./esm/${entry.modulePath}/publicApi.d.ts`,
-        });
+        }
 
-        return acc;
+        return acc
     }, {} as Record<string, any>)
 
     console.log('exportsInfo', JSON.stringify(exportsInfo, null, 2))
@@ -145,13 +145,9 @@ async function writeExports(buildTask: BuildTask) {
 
         exportsInfo!['./package.json'] = './package.json'
         exportsInfo!['.'] = {
-            "import": `./fesm/${excludeScopeName(
-                entry.modulePath
-            )}.js`,
-            "require": `./dist/${excludeScopeName(
-                entry.modulePath
-            )}.js`,
-            "types": `./esm/publicApi.d.ts`
+            import: `./fesm/${excludeScopeName(entry.modulePath)}.js`,
+            require: `./dist/${excludeScopeName(entry.modulePath)}.js`,
+            types: `./esm/publicApi.d.ts`,
         }
         packageJSONObject.exports = exportsInfo
 
@@ -230,15 +226,16 @@ async function buildESM(entry: EntryPoint): Promise<void> {
  */
 async function buildUMD(entry: EntryPoint): Promise<void> {
     const bundle = await rollup.rollup({
-        input: `${entry.fileDestination.esm
-            }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
+        input: `${
+            entry.fileDestination.esm
+        }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
         external: (moduleId) => {
             const isFromAnotherEntryPoint = entry.dependencies.has(moduleId)
             if (!isFromAnotherEntryPoint) {
                 return entry.externalDependencies.has(moduleId)
             }
 
-            return isFromAnotherEntryPoint;
+            return isFromAnotherEntryPoint
         },
         preserveSymlinks: true,
         inlineDynamicImports: true,
@@ -255,15 +252,16 @@ async function buildUMD(entry: EntryPoint): Promise<void> {
 
 async function buildFESM(entry: EntryPoint): Promise<void> {
     const bundle = await rollup.rollup({
-        input: `${entry.fileDestination.esm
-            }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
+        input: `${
+            entry.fileDestination.esm
+        }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
         external: (moduleId) => {
             const isFromAnotherEntryPoint = entry.dependencies.has(moduleId)
             if (!isFromAnotherEntryPoint) {
                 return entry.externalDependencies.has(moduleId)
             }
 
-            return isFromAnotherEntryPoint;
+            return isFromAnotherEntryPoint
         },
         preserveSymlinks: true,
         inlineDynamicImports: true,
@@ -396,7 +394,7 @@ async function analyzeEntryPoint(
     const compilerHost = ts.createIncrementalCompilerHost(tsConfig)
 
     // record external dependencies
-    externalDependencies.forEach(e => entryPoint.dependentsOnExternal(e))
+    externalDependencies.forEach((e) => entryPoint.dependentsOnExternal(e))
 
     console.log('external dependencies', externalDependencies)
 
@@ -607,17 +605,21 @@ async function readExternalDependencies(): Promise<string[]> {
 
     if (packageJSON) {
         const packageJSONObject = JSON.parse(packageJSON)
-        const externalPackages = [];
+        const externalPackages = []
 
         if (packageJSONObject.dependencies) {
-            externalPackages.push(...Object.keys(packageJSONObject.dependencies))
+            externalPackages.push(
+                ...Object.keys(packageJSONObject.dependencies)
+            )
         }
         if (packageJSONObject.peerDependencies) {
-            externalPackages.push(...Object.keys(packageJSONObject.peerDependencies))
+            externalPackages.push(
+                ...Object.keys(packageJSONObject.peerDependencies)
+            )
         }
 
         return externalPackages
     }
 
-    return [];
+    return []
 }
