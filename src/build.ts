@@ -87,7 +87,8 @@ function resolveTsConfig(directoryPath: string, _isPrimary: boolean) {
 
 /**
  * build from the path of the primary entry point
- *
+ * 
+ * @main
  * @param workingPath primary entry (the folder that contains the package.json) path
  */
 export async function build(workingPath: string) {
@@ -95,9 +96,12 @@ export async function build(workingPath: string) {
 
     await cleanUp(path.resolve(workingPath, task.config.dest))
 
+    const externalDependencies = await readExternalDependencies()
+
     // TODO: stop execution when analyze failed
+    // TODO: parallelism
     task.getAllEntries().forEach((entryPoint) =>
-        analyzeEntryPoint(entryPoint, task.moduleName)
+        analyzeEntryPoint(entryPoint, task.moduleName, externalDependencies)
     )
 
     const sortedEntries = await scheduleEntryPoint(task)
@@ -229,8 +233,12 @@ async function buildUMD(entry: EntryPoint): Promise<void> {
         input: `${entry.fileDestination.esm
             }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
         external: (moduleId) => {
-            const ret = entry.dependencies.has(moduleId)
-            return ret
+            const isFromAnotherEntryPoint = entry.dependencies.has(moduleId)
+            if (!isFromAnotherEntryPoint) {
+                return entry.externalDependencies.has(moduleId)
+            }
+
+            return isFromAnotherEntryPoint;
         },
         preserveSymlinks: true,
         inlineDynamicImports: true,
@@ -249,7 +257,14 @@ async function buildFESM(entry: EntryPoint): Promise<void> {
     const bundle = await rollup.rollup({
         input: `${entry.fileDestination.esm
             }/${entry.buildConfig.entryFileName.replace(/.ts$/, '.js')}`,
-        external: (moduleId) => entry.dependencies.has(moduleId),
+        external: (moduleId) => {
+            const isFromAnotherEntryPoint = entry.dependencies.has(moduleId)
+            if (!isFromAnotherEntryPoint) {
+                return entry.externalDependencies.has(moduleId)
+            }
+
+            return isFromAnotherEntryPoint;
+        },
         preserveSymlinks: true,
         inlineDynamicImports: true,
         treeshake: false,
@@ -365,7 +380,8 @@ async function scheduleEntryPoint(buildTask: BuildTask): Promise<EntryPoint[]> {
  */
 async function analyzeEntryPoint(
     entryPoint: EntryPoint,
-    primaryModuleName: string
+    primaryModuleName: string,
+    externalDependencies: string[]
 ) {
     const { modulePath: selfModuleName, entryFilePath } = entryPoint
     const entryRootPath = path.dirname(entryFilePath)
@@ -378,6 +394,11 @@ async function analyzeEntryPoint(
         target: ts.ScriptTarget.Latest,
     }
     const compilerHost = ts.createIncrementalCompilerHost(tsConfig)
+
+    // record external dependencies
+    externalDependencies.forEach(e => entryPoint.dependentsOnExternal(e))
+
+    console.log('external dependencies', externalDependencies)
 
     // we hook typescript compiler here to do two things
     // 1. find any potential dependencies that may be another entry points
@@ -576,4 +597,27 @@ async function discoverSecondaryEntries(
     })
 
     return files.map((file) => path.dirname(file))
+}
+
+async function readExternalDependencies(): Promise<string[]> {
+    let packageJSON = await fs.promises.readFile(
+        path.resolve(process.cwd(), 'package.json'),
+        'utf-8'
+    )
+
+    if (packageJSON) {
+        const packageJSONObject = JSON.parse(packageJSON)
+        const externalPackages = [];
+
+        if (packageJSONObject.dependencies) {
+            externalPackages.push(...Object.keys(packageJSONObject.dependencies))
+        }
+        if (packageJSONObject.peerDependencies) {
+            externalPackages.push(...Object.keys(packageJSONObject.peerDependencies))
+        }
+
+        return externalPackages
+    }
+
+    return [];
 }

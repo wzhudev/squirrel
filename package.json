@@ -10,6 +10,7 @@
         "test": "jest --coverage",
         "lint": "prettier --write 'src/**/*.{ts,tsx}'",
         "build": "tsc",
+        "watch": "tsc --watch",
         "schema": "json2ts --input ./src/schema/squirrel.schema.json --output ./src/schema/squirrel.schema.ts"
     },
     "author": "wendellhu95 <wendellhu95@gmail.com>",

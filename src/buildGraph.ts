@@ -16,6 +16,7 @@ interface EntryPointDestination {
 
 export class EntryPoint {
     public readonly dependencies: Set<string> = new Set()
+    public readonly externalDependencies: Set<string> = new Set()
 
     public readonly fileDestination: EntryPointDestination
 
@@ -52,6 +53,10 @@ export class EntryPoint {
 
     public dependentsOn(dependentModuleName: string): void {
         this.dependencies.add(dependentModuleName)
+    }
+
+    public dependentsOnExternal(externalPackageName: string): void {
+        this.externalDependencies.add(externalPackageName)
     }
 }
 
