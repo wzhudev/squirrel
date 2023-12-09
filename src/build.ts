@@ -247,6 +247,7 @@ async function buildUMD(entry: EntryPoint): Promise<void> {
         format: 'umd',
         file: `${entry.fileDestination.umd}.js`,
         sourcemap: true,
+        globals: (name) => name
     })
 }
 
