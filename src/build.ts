@@ -133,7 +133,6 @@ async function writeExports(buildTask: BuildTask) {
         return acc
     }, {} as Record<string, any>)
 
-    console.log('exportsInfo', JSON.stringify(exportsInfo, null, 2))
     let packageJSON = await fs.promises.readFile(
         path.resolve(process.cwd(), 'publish/package.json'),
         'utf-8'
@@ -243,11 +242,11 @@ async function buildUMD(entry: EntryPoint): Promise<void> {
     })
 
     await bundle.write({
-        name: entry.modulePath,
+        name: entry.isPrimary ? entry.modulePath : `${entry.primaryModuleName}/${entry.modulePath}`,
         format: 'umd',
         file: `${entry.fileDestination.umd}.js`,
         sourcemap: true,
-        globals: (name) => name
+        globals: (name) => name,
     })
 }
 
@@ -396,8 +395,6 @@ async function analyzeEntryPoint(
 
     // record external dependencies
     externalDependencies.forEach((e) => entryPoint.dependentsOnExternal(e))
-
-    console.log('external dependencies', externalDependencies)
 
     // we hook typescript compiler here to do two things
     // 1. find any potential dependencies that may be another entry points
