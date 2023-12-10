@@ -124,8 +124,8 @@ import {} from 'your-package-name' // error!
 
 ## Used by
 
--   [redi](https://github.com/wendellhu95/redi), a dependency injection library
+-   [redi](https://github.com/wzhudev/redi), a dependency injection library
 
 ## License
 
-MIT. Copyright 2021 Wendell Hu.
+MIT. Copyright 2021-present Wenzhao Hu.

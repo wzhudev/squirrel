@@ -1,7 +1,7 @@
 {
     "name": "@wendellhu/squirrel",
-    "version": "0.1.4",
-    "description": "",
+    "version": "0.1.5",
+    "description": "A no (or low) config bundler for bundling Typescript libraries. Auto-detect secondary entry points and build them for you.",
     "main": "index.js",
     "bin": {
         "squirrel": "./bin/index.js"
@@ -13,7 +13,7 @@
         "watch": "tsc --watch",
         "schema": "json2ts --input ./src/schema/squirrel.schema.json --output ./src/schema/squirrel.schema.ts"
     },
-    "author": "wendellhu95 <wendellhu95@gmail.com>",
+    "author": "wzhudev<wzhudev@gmail.com>",
     "license": "MIT",
     "devDependencies": {
         "@types/glob": "^7.1.4",
