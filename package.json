@@ -1,6 +1,6 @@
 {
     "name": "@wendellhu/squirrel",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "A no (or low) config bundler for bundling Typescript libraries. Auto-detect secondary entry points and build them for you.",
     "main": "index.js",
     "bin": {
