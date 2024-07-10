@@ -122,12 +122,9 @@ export async function build(workingPath: string) {
 async function writeExports(buildTask: BuildTask) {
     const exportsInfo = buildTask.secondaryEntryPoints?.reduce((acc, entry) => {
         acc[`./${entry.modulePath}`] = {
-            // main: `../dist/${entry.modulePath}.js`,
-            // module: `../fesm/${entry.modulePath}.js`,
-            // typings: `../esm/${entry.modulePath}/publicApi.d.ts`,
-            import: `./fesm/${entry.modulePath}.js`,
-            require: `./dist/${entry.modulePath}.js`,
             types: `./esm/${entry.modulePath}/publicApi.d.ts`,
+            import: `./fesm/${entry.modulePath}.mjs`,
+            require: `./dist/${entry.modulePath}.js`,
         }
 
         return acc
@@ -144,9 +141,9 @@ async function writeExports(buildTask: BuildTask) {
 
         exportsInfo!['./package.json'] = './package.json'
         exportsInfo!['.'] = {
-            import: `./fesm/${excludeScopeName(entry.modulePath)}.js`,
-            require: `./dist/${excludeScopeName(entry.modulePath)}.js`,
             types: `./esm/publicApi.d.ts`,
+            import: `./fesm/${excludeScopeName(entry.modulePath)}.mjs`,
+            require: `./dist/${excludeScopeName(entry.modulePath)}.js`,
         }
         packageJSONObject.exports = exportsInfo
 
@@ -242,11 +239,13 @@ async function buildUMD(entry: EntryPoint): Promise<void> {
     })
 
     await bundle.write({
-        name: entry.isPrimary ? entry.modulePath : `${entry.primaryModuleName}/${entry.modulePath}`,
+        name: entry.isPrimary
+            ? entry.modulePath
+            : `${entry.primaryModuleName}/${entry.modulePath}`,
         format: 'umd',
         file: `${entry.fileDestination.umd}.js`,
         sourcemap: true,
-        globals: (name) => name === entry.primaryModuleName ? name : '',
+        globals: (name) => (name === entry.primaryModuleName ? name : ''),
     })
 }
 
@@ -271,7 +270,7 @@ async function buildFESM(entry: EntryPoint): Promise<void> {
     await bundle.write({
         name: entry.modulePath,
         format: 'es',
-        file: `${entry.fileDestination.fesm}.js`,
+        file: `${entry.fileDestination.fesm}.mjs`,
         sourcemap: true,
     })
 }
@@ -311,7 +310,7 @@ async function writePackageJSON(entry: EntryPoint): Promise<void> {
             )}.js`
             packageJSONObject.module = `./fesm/${excludeScopeName(
                 entry.modulePath
-            )}.js`
+            )}.mjs`
             packageJSONObject.typings = `./esm/${entry.buildConfig.entryFileName.replace(
                 /.ts$/,
                 '.d.ts'
